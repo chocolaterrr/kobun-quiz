@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ターゲット1900 英単語アプリ</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { text-align: center; font-size: 1.4rem; color: #2c3e50; margin-bottom: 5px; }
+        .guide-box { background-color: #ebf5fb; border-left: 4px solid #3498db; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; line-height: 1.5; color: #2c3e50; }
+        
+        .select-container { margin-bottom: 20px; background-color: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e1e8ed; }
+        .select-label { font-size: 0.85rem; font-weight: bold; color: #7f8c8d; margin-bottom: 5px; display: block; }
+        select { width: 100%; padding: 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #bdc3c7; background-color: #fff; cursor: pointer; }
+
+        .btn-refresh { display: block; width: 100%; background: #3498db; color: #fff; border: none; padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; text-align: center; margin-bottom: 20px; transition: background 0.2s; }
+        .btn-refresh:active { background: #2980b9; }
+        .quiz-row { display: flex; align-items: center; background: #fff; border: 1px solid #e1e8ed; border-radius: 8px; margin-bottom: 10px; padding: 10px; }
+        .question { font-size: 1.2rem; font-weight: bold; width: 120px; flex-shrink: 0; color: #2c3e50; word-break: break-all; }
+        .answers { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; padding-left: 10px; border-left: 2px solid #e1e8ed; }
+        .answer-item { font-size: 0.9rem; color: #7f8c8d; display: none; }
+        .answer-item span { color: #e74c3c; font-weight: bold; }
+        .quiz-row.show .answer-item { display: block; }
+        .toggle-btn { background: #fff; border: 2px solid #bdc3c7; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .quiz-row.show .toggle-btn { border-color: #2ecc71; color: #2ecc71; }
+        .link-btn { display: block; width: 100%; background: #fff; color: #3498db; border: 2px solid #3498db; padding: 10px; font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 30px; text-align: center; text-decoration: none; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 英単語テスト (15問)</h1>
+    
+    <div class="guide-box">
+        💡 <strong>遊び方</strong><br>
+        英単語の意味を頭の中で思い浮かべてみよう！<br>
+        右側の <strong>👁️ ボタンを押すと、その行の日本語の意味がパッと表示</strong> されます。
+    </div>
+
+    <div class="select-container">
+        <span class="select-label">出題する範囲（セクション）を選択：</span>
+        <select id="section-select" onchange="generateQuiz()">
+            <option value="section1">パート1：常に最初に出る1〜100番</option>
+        </select>
+    </div>
+
+    <button class="btn-refresh" onclick="generateQuiz()">🔄 次の15問へ（シャッフル）</button>
+    <div id="quiz-list"></div>
+
+    <!-- 古文のクイズ画面へいつでも戻れるボタン -->
+    <a href="index.html" class="link-btn">⬅ 古文のクイズ画面に戻る</a>
+</div>
+
+<script src="words_data.js"></script>
+<script>
+    function generateQuiz() {
+        const select = document.getElementById('section-select');
+        const activeSection = select.value;
+        const currentList = wordDataset[activeSection] || [];
+        
+        if (currentList.length === 0) {
+            document.getElementById('quiz-list').innerHTML = '<div style="text-align:center;color:#e74c3c;padding:20px;">データがありません。</div>';
+            return;
+        }
+
+        const shuffled = [...currentList].sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, 15);
+        const quizList = document.getElementById('quiz-list');
+        quizList.innerHTML = '';
+
+        selected.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'quiz-row';
+            row.id = `row-${index}`;
+            row.innerHTML = `
+                <div class="question">${item.word}</div>
+                <div class="answers">
+                    <div class="answer-item"><span>意味：</span>${item.mean}</div>
+                </div>
+                <button class="toggle-btn" onclick="toggleAnswer(${index})">👁️</button>
+            `;
+            quizList.appendChild(row);
+        });
+    }
+
+    function toggleAnswer(index) {
+        const row = document.getElementById(`row-${index}`);
+        row.classList.toggle('show');
+        const btn = row.querySelector('.toggle-btn');
+        btn.textContent = row.classList.contains('show') ? '✓' : '👁️';
+    }
+
+    window.onload = function() {
+        generateQuiz();
+    };
+</script>
+</body>
+</html>
